@@ -1,3 +1,5 @@
+// Fonction principal
+
 #include "LA.h"
 #include <stdio.h>
 #include <limits.h>
