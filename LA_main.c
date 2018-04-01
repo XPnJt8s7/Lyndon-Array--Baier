@@ -11,7 +11,7 @@
 void printUsage(const char *cmd);
 
 #if Prints
-void print_res();
+  void print_res();
 #endif
 
 int main(int argc, char const *argv[]) {
@@ -97,22 +97,6 @@ if(f_loc > 0){
   }
 }
 
-    ////printf("%s\n",S);
-    //printf("word size: %u\n\n", n);
-    // int a[10] = {10,11,12,13};
-
-    // int alfa = 0;
-    // int beta = 0;
-    //printf("nomber of alfa (%d) and beta (%d)\n", alfa++,++beta);
-
-    //printf("nomber of alfa (%d) and beta (%d)\n", alfa++,++beta);
-
-
-
-    //SA[0] = 0;
-
-    // //printf("SA[0] = %u\n",SA[0]);
-
     unsigned int * SA = (unsigned int *)malloc( n * sizeof(unsigned int) );
     //printf("1\n");
     unsigned int * ISA = (unsigned int *)malloc( n * sizeof(unsigned int) );
@@ -192,7 +176,6 @@ if(f_loc > 0){
       printf("\n");
     #endif
 
-
     free(SA);
     free(ISA);
     free(PREV);
@@ -200,10 +183,7 @@ if(f_loc > 0){
     free(LA);
     free(S);
 
-
-
     //printf("done\n");
-
 
     return 0;
 }
