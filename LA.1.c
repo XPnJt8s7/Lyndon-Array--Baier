@@ -23,10 +23,10 @@ unsigned int s, p, sr;
 unsigned int tmp, gstarttmp, gendtmp;
 unsigned int C[2*C_SIZE]; //counts and cumulative counts
 const unsigned char *S_;
-unsigned int *LA_, *SA_, *ISA_, *PREV_;
+unsigned int *LA_, *SA_, *ISA_, *PREV_, *new_PREV;
 unsigned int n_;
 void *GSIZE_;
-unsigned int CONTEXTSIZE,prev_counter;
+unsigned int CONTEXTSIZE,prev_counter,new_PREV_size;
 
 
 void         gsize_set( void *g, unsigned int pos, unsigned int val );
@@ -183,6 +183,12 @@ void process_groups(){
 		gstarttmp = gstart;
     gendtmp = gend;
 
+    new_PREV_size = gsize_get(GSIZE_,gstart);
+
+    new_PREV = (unsigned int *)malloc( new_PREV_size * sizeof(unsigned int) );
+
+    info(("new_PREV of %u slots\n\n",gsize_get(GSIZE_,gstart)));
+
     CONTEXTSIZE = LA_[SA_[gstart]];
 
 			#if Prints
@@ -269,6 +275,9 @@ void process_groups(){
   		setup_new_GSIZE();
 		*/
 
+    free(new_PREV);
+    new_PREV = 0;
+
 		//prepare current group for phase 2
 		SA_[gendtmp] = gstarttmp; //counter where to place next entry
 
@@ -287,20 +296,11 @@ void process_groups(){
     info(("\n"));
 	}
 
-
-	//
-	//
-	// //free(GROUP);
-	//
-	// info(("\n\n"));
-	// info(("hello\n"));
-	// info(("\n\n"));
-
 }
 
 void get_gstart(){
-	for (i = gend; i > 0; --i) {
-			tmp = gsize_get(GSIZE_, i);
+	for (unsigned int k = gend; k > 0; --k) {
+			tmp = gsize_get(GSIZE_, k);
 			//printf("i = %u, tmp = %u\n\n", i, tmp);
 			if (tmp != 0) {
 					gstart = gend - tmp + 1;
@@ -350,7 +350,8 @@ void algo3(){
     printf(" *** algo3 ***\n\n");
   #endif
 
-	for (p = s-1; p < n_; p = PREV_[p]) {
+	// for (p = s-1; p < n_; p = PREV_[p]) {
+  for (p = s-1; p < n_; p--) {
 		info((" ISA[p] = %u\n", ISA_[p]));
 		info((" ISA[p] <= gend is %s\n\n", ISA_[p] <= gend ? "true" : "false"));
 
@@ -380,45 +381,6 @@ void algo3(){
     printf(" ***       ***\n\n");
   #endif
 }
-///////////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////////
-// void algo3mk2(){
-//   #if Prints
-//     printf(" *** algo3mk2 ***\n\n");
-//   #endif
-//
-// 	for (p = s-1; p < n_; p = PREV_[p]) {
-// 		info((" ISA[p] = %u\n", ISA_[p]));
-// 		info((" ISA[p] <= gend is %s\n\n", ISA_[p] <= gend ? "true" : "false"));
-//
-//     if(ISA_[p] <= gend && ISA_[p] <= gstart){
-//       break;
-//     }
-//
-// 		// if (ISA_[p] <= gend) {
-// 		// 	info(("  ISA[p] >= gstart is %s\n\n", ISA_[p] >= gstart ? "true" : "false"));
-// 		// 	if (ISA_[p] >= gstart) {
-// 		// 		gsize_set(GSIZE_, ISA_[p], 1); //mark ISA[p]  //comment
-//     //
-//     //     n_group_reordered++;
-//     //
-//     //     #if Prints
-//     //       gset = ISA_[p];
-//     //     #endif
-//     //
-// 		// 		info(("   GSIZE[ISA[p]] <- 1\n\n"));
-// 		// 	}
-// 		// 	break;
-// 		// }
-//
-// 		info((" p <- PREV[p] = %u\n\n",PREV_[p]));
-// 	}
-//
-//   #if Prints
-//     printf(" ***       ***\n\n");
-//   #endif
-// }
 ///////////////////////////////////////////////////////////////////////////////////
 
 void set_GENDLINK_suffs(){
