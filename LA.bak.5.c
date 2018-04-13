@@ -23,10 +23,10 @@ unsigned int s, p, sr;
 unsigned int tmp, gstarttmp, gendtmp;
 unsigned int C[2*C_SIZE]; //counts and cumulative counts
 const unsigned char *S_;
-unsigned int *LA_, *SA_, *ISA_, *PREV_, *new_PREV;
+unsigned int *LA_, *SA_, *ISA_, *PREV_, *new_PREV,*loc_PREV;
 unsigned int n_;
 void *GSIZE_;
-unsigned int CONTEXTSIZE,prev_counter,new_PREV_size,r,rtmp,n_jumps;
+unsigned int CONTEXTSIZE,prev_counter,new_PREV_size,r,rtmp,n_jumps,loc;
 
 
 void         gsize_set( void *g, unsigned int pos, unsigned int val );
@@ -63,6 +63,7 @@ void set_new_GLINK();
 void setup_new_GSIZE();
 unsigned int get_GLINK(unsigned int pos);
 void shift_new_PREV();
+void isort2(unsigned int start, unsigned int end);
 
 
 int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned int *ISA , unsigned int *PREV, void *GSIZE, unsigned int n) {
@@ -99,7 +100,6 @@ int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, un
 		setup_rest();
 
     // printf("set up ISA, GLINK and SA\n");
-
 
     info(("\n"));
 
@@ -179,9 +179,13 @@ void process_groups(){
 		gstarttmp = gstart;
     gendtmp = gend;
 
+    // isort2(gstart,gend);
+
     new_PREV_size = gsize_get(GSIZE_,gstart);
 
     new_PREV = (unsigned int *)malloc( new_PREV_size * sizeof(unsigned int) );
+
+    loc_PREV = (unsigned int *)calloc( new_PREV_size , sizeof(unsigned int));
 
     info(("new_PREV of %u slots\n\n",new_PREV_size));
 
@@ -230,7 +234,7 @@ void process_groups(){
 
     info(("\n"));
 
-    getchar();
+    //getchar();
 
 		//order the suffixes according on how much suffixes of same
 		//group are jumped by them
@@ -273,7 +277,8 @@ void process_groups(){
 		*/
 
     free(new_PREV);
-    new_PREV = 0;
+    free(loc_PREV);
+    new_PREV = loc_PREV = 0;
 
 		//prepare current group for phase 2
 		SA_[gendtmp] = gstarttmp; //counter where to place next entry
@@ -306,14 +311,23 @@ void get_gstart(){
 	}
 }
 
+void isort2(unsigned int start, unsigned int end){
+  unsigned int i, j;
+  unsigned int t,t_ISA;
+  for (i = start; i < end+1; i++){
+    for (j = i; j > start && SA_[j-1] > SA_[j]; j--) {
+      t = SA_[j]; t_ISA = ISA_[j];
+      ISA_[j] = ISA_[j-1];ISA_[j-1] = t_ISA;
+      SA_[j] = SA_[j-1];SA_[j-1] = t;
+    }
+  }
+}
+
 void compute_prev(){
 	for (i = gend; i >= gstart; --i) {
 		info(("i = %d\n\n", i));
 		s = SA_[i]; //use prev - pointers from already used groups
 		info(("s = SA[i] = %u\n", SA_[i]));
-
-		//GROUP[0] = 1;
-		//GROUP[i-gstart] = tmp;
 
 		//////////////////////////////////////////
 
@@ -404,6 +418,8 @@ void set_GENDLINK_suffs(){
         nomark = 1;
       #endif
 
+      loc_PREV[j] = i-gstart-j;
+
       SA_[gstart+(j++)] = s;
 
 			info(("  j = %d\n", j));
@@ -420,6 +436,7 @@ void set_GENDLINK_suffs(){
 
 		}
 
+
     gsize_set(GSIZE_,i,0);
 
 		info(("\n"));
@@ -430,7 +447,6 @@ void set_GENDLINK_suffs(){
     #if Prints
       print_new_PREV();
     #endif
-
 	}
 }
 
@@ -449,7 +465,7 @@ void order_suffs(){
 		while (i >= gstart) {
 
       #if Prints
-      printf(" ");
+        printf(" ");
         print_new_PREV();
       #endif
 
@@ -461,13 +477,15 @@ void order_suffs(){
 			s = SA_[i];
 			info(("  s <- SA[i] = %u\n", s));
 
-      p = new_PREV[i-gstart+r];
+      loc = loc_PREV[i-gstart];
+
+      p = new_PREV[i-gstart+loc];
       info(("  p <- new_PREV[magic] = %u\n\n",p));
 
-      p = PREV_[s];
-			info(("  p <- PREV[s] = %u\n", p));
+      // p = PREV_[s];
+			// info(("  p <- PREV[s] = %u\n", p));
 
-      getchar();
+      //getchar();
 
 			info(("  p < n is %s\n\n", p < n_ ? "true" : "false"));
 
@@ -475,6 +493,7 @@ void order_suffs(){
 
 			info(("   ISA[p] = %u\n", ISA_[p]));
 			info(("   ISA[p] < gstarttmp is %s\n\n", ISA_[p] < gstarttmp ? GREEN"true"RESET : RED"false"RESET));
+
 				if (ISA_[p] < gstarttmp) { //p is in a lex. smaller group
 
           #if Prints
@@ -484,7 +503,12 @@ void order_suffs(){
 
           LA_[p] += prev_counter * CONTEXTSIZE;
 
-          new_PREV[i-gstart+r] = new_PREV[i+1-gstart+r];
+          if(i-gstart < new_PREV_size && i-gstart+1 < new_PREV_size){
+            // printf("asdf %u\n",i-gstart-1);
+            loc_PREV[i-gstart] = loc_PREV[i-gstart+1] + 1;
+          }
+
+          // new_PREV[i-gstart+loc] = new_PREV[i+1-gstart+loc];
 
 					SA_[i--] = SA_[--gend];
 
@@ -492,7 +516,7 @@ void order_suffs(){
 
           // shift_new_PREV();
 
-          r -= n_jumps;
+          // r -= n_jumps;
 
 					info(("     SA[i] <- SA[gend-1] = %u\n",get_value));
 					info(("     gend <- %u\n", gend));
@@ -509,7 +533,7 @@ void order_suffs(){
             print_new_PREV();
           #endif
 
-          getchar();
+          //getchar();
 
 				} else { //p is in same group
 
@@ -518,6 +542,16 @@ void order_suffs(){
           #endif
 
 					PREV_[s] = PREV_[p];
+
+          // if(i-gstart-1+loc >= 0){
+          //   new_PREV[i-gstart+loc] = new_PREV[i-gstart-1+loc];
+          // }
+
+          if(loc_PREV[i-gstart] > 0){
+            loc_PREV[i-gstart]--;
+          }else{
+            loc_PREV[i-gstart] = new_PREV_size-1;
+          }
 
           info(("     PREV[s] <- PREV[p] = %u\n",get_value));
 
@@ -528,7 +562,7 @@ void order_suffs(){
 
 					PREV_[p] = n_; //clear prev pointer, is not used in phase 2
 
-          new_PREV[i-gstart+r] = n_;
+          // new_PREV[i-gstart+loc-1] = n_;
 
           // shift_new_PREV();
 
@@ -544,7 +578,7 @@ void order_suffs(){
             print_new_PREV();
           #endif
 
-          getchar();
+          //getchar();
 
 				}
 			} else { //prev points to nothing
@@ -563,7 +597,6 @@ void order_suffs(){
 				#if Prints
 					print_order_suffs_rem();
 				#endif
-
 
 			}
 
@@ -1098,6 +1131,15 @@ void print_new_PREV(){
   for (k = 0; k < new_PREV_size; k++) {
     if (new_PREV[k] < n_) {
       printf(" %3u", new_PREV[k]);
+    }else{
+      printf(" %3s","inf");
+    }
+  }
+  printf("\n\n");
+  printf("%9s","nPloc[i] ");
+  for (k = 0; k < new_PREV_size; k++) {
+    if (loc_PREV[k] < n_) {
+      printf(" %3u", loc_PREV[k]);
     }else{
       printf(" %3s","inf");
     }
