@@ -124,34 +124,10 @@ if(f_loc > 0){
        return 1;
     }
 
-    //printf("\n");
-
-    // unsigned int max = 0;
-    //
-    // unsigned int min = 0; min -= 1;
-    // unsigned int tmp;
-    // double avg = 0;
-    //
-    // unsigned int n_group = 0;
-
-    // for (size_t i = 0; i < n; i++) {
-    //   tmp = ((unsigned int *)GSIZE)[i];
-    //
-    //   if(tmp){
-    //     n_group++;
-    //     avg += tmp;
-    //
-    //     max = MAX(max,tmp);
-    //     min = MIN(min,tmp);
-    //   }
-    // }
-
-    // printf("%f,%u,%u\n",avg/n_group,max,min);
-
     #if Prints
 
       unsigned int k;
-      printf("\n\n\n");
+      // printf("\n\n\n");
 
       printf("%5s","i ");
       for (k = 0; k < n; k++) {

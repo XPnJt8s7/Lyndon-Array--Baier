@@ -7,8 +7,10 @@
 
 #if Prints
   #define info(a) printf a
+  #define pause getchar()
 #else
   #define info(a) (void)0
+  #define pause (void)0
 #endif
 
 #define C_SIZE (UCHAR_MAX+1)
@@ -130,7 +132,7 @@ int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, un
 
 		process_groups();
 
-    info(("end of program\n"));
+    info(("end of programme\n\n\n"));
     return 0;
 }
 
@@ -512,7 +514,6 @@ void order_suffs(){
 
 			++j; //also, count number of splitted groups
 			info(("  j = %u\n\n", j));
-      // getchar();
 		}
 
     prev_counter++;

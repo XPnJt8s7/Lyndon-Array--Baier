@@ -7,8 +7,10 @@
 
 #if Prints
   #define info(a) printf a
+  #define pause getchar()
 #else
   #define info(a) (void)0
+  #define pause (void)0
 #endif
 
 #define C_SIZE (UCHAR_MAX+1)
@@ -26,7 +28,7 @@ const unsigned char *S_;
 unsigned int *LA_, *SA_, *ISA_, *PREV_, *new_PREV,*loc_PREV;
 unsigned int n_;
 void *GSIZE_;
-unsigned int CONTEXTSIZE,prev_counter,new_PREV_size,r,rtmp,n_jumps,loc;
+unsigned int CONTEXTSIZE,prev_counter,new_PREV_size,n_jumps,loc,loc_GLINK,gend_prev_suffs,gstart_prev_suffs,prev_nothing,loc_shift_count;
 
 
 void         gsize_set( void *g, unsigned int pos, unsigned int val );
@@ -64,6 +66,8 @@ void setup_new_GSIZE();
 unsigned int get_GLINK(unsigned int pos);
 void shift_new_PREV();
 void isort2(unsigned int start, unsigned int end);
+void set_GSIZE2();
+void get_prev_GLINK();
 
 
 int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned int *ISA , unsigned int *PREV, void *GSIZE, unsigned int n) {
@@ -126,7 +130,7 @@ int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, un
 
 		process_groups();
 
-    info(("end of program\n"));
+    info(("end of programme\n\n\n"));
     return 0;
 }
 
@@ -212,12 +216,12 @@ void process_groups(){
     info(("==============compute prev============\n\n"));
     info(("i <- gend = %u\n\n", gend));
 
-    r=0;
+    // r=0;
 
 		compute_prev(); //###################################
 
     // r = --j;
-    rtmp = r;
+    // rtmp = r;
 
 		//set GENDLINK of all suffixes for phase 2 and move unmarked
 		//suffixes to the front of the actual group
@@ -234,7 +238,9 @@ void process_groups(){
 
     info(("\n"));
 
-    //getchar();
+    #if Prints
+      getchar();
+    #endif
 
 		//order the suffixes according on how much suffixes of same
 		//group are jumped by them
@@ -244,6 +250,8 @@ void process_groups(){
     //############################  ! ! !  ############################
 		gend = gstart + j; //exclusive bound by now
     //############################  ! ! !  ############################
+
+    gend_prev_suffs = gend;
 
     info(("gstart = %u\nj = %u\n\n",gstart,j));
 		info(("gend <- gstart + j = %u (exclusive bound by now)\n", gend));
@@ -255,18 +263,37 @@ void process_groups(){
     //reset prev_couter for order_suffs
     prev_counter = 1;
 
+    prev_nothing = 0;
+
 		//OPTIMIZE: ////////////////////////////////////////////////////////////////
 		order_suffs();
 		////////////////////////////////////////////////////////////////////////////
+
+    gstart_prev_suffs = gstart;
 
     info(("\n"));
 
 		// //print_state();
         //ALGO 6
 		//rearrange previous suffixes stored in other groups
+    info(("-## set GLINK for moved suffixes\n\n"));
+
+    // if(gstarttmp == gendtmp){
+    //   new_PREV[0] = ISA_[SA_[gstarttmp]];
+    // }else{
+
+    get_prev_GLINK();
+
+    #if Prints
+      print_new_PREV();
+    #endif
+
+    pause;
+
     info(("--- rearrange previous suffixes stored in other groups\n\n\n"));
 
-    //l = 0;
+    loc = 0;
+    loc_shift_count = 0;
 
 		rearrange_prev_suffs();
 
@@ -296,6 +323,8 @@ void process_groups(){
     #endif
 
     info(("\n"));
+
+    pause;
 	}
 
 }
@@ -311,17 +340,18 @@ void get_gstart(){
 	}
 }
 
-void isort2(unsigned int start, unsigned int end){
-  unsigned int i, j;
-  unsigned int t,t_ISA;
-  for (i = start; i < end+1; i++){
-    for (j = i; j > start && SA_[j-1] > SA_[j]; j--) {
-      t = SA_[j]; t_ISA = ISA_[j];
-      ISA_[j] = ISA_[j-1];ISA_[j-1] = t_ISA;
-      SA_[j] = SA_[j-1];SA_[j-1] = t;
-    }
-  }
-}
+// Trie par insertion
+// void isort2(unsigned int start, unsigned int end){
+//   unsigned int i, j;
+//   unsigned int t,t_ISA;
+//   for (i = start; i < end+1; i++){
+//     for (j = i; j > start && SA_[j-1] > SA_[j]; j--) {
+//       t = SA_[j]; t_ISA = ISA_[j];
+//       ISA_[j] = ISA_[j-1];ISA_[j-1] = t_ISA;
+//       SA_[j] = SA_[j-1];SA_[j-1] = t;
+//     }
+//   }
+// }
 
 void compute_prev(){
 	for (i = gend; i >= gstart; --i) {
@@ -373,7 +403,7 @@ void algo3(){
 			info(("  ISA[p] >= gstart is %s\n\n", ISA_[p] >= gstart ? "true" : "false"));
 			if (ISA_[p] >= gstart) {
 				gsize_set(GSIZE_, ISA_[p], 1); //mark ISA[p]  //comment
-        r++;
+
         #if Prints
           gset = ISA_[p];
         #endif
@@ -436,7 +466,6 @@ void set_GENDLINK_suffs(){
 
 		}
 
-
     gsize_set(GSIZE_,i,0);
 
 		info(("\n"));
@@ -472,20 +501,21 @@ void order_suffs(){
 			info(("  gend = %u\n", gend));
 			info(("  i = %u\n", i));
 			info(("  sr = %u\n", sr));
-      info(("  r = %u\n\n",r));
+      // info(("  r = %u\n\n",r));
 
 			s = SA_[i];
 			info(("  s <- SA[i] = %u\n", s));
 
       loc = loc_PREV[i-gstart];
+      info(("  loc <- loc_PREV[i-gstart] = %u\n", loc_PREV[i-gstart]));
 
       p = new_PREV[i-gstart+loc];
-      info(("  p <- new_PREV[magic] = %u\n\n",p));
+      info(("  p <- new_PREV[i-gstart+loc] = %u\n\n",p));
 
       // p = PREV_[s];
 			// info(("  p <- PREV[s] = %u\n", p));
 
-      //getchar();
+      pause;
 
 			info(("  p < n is %s\n\n", p < n_ ? "true" : "false"));
 
@@ -533,7 +563,7 @@ void order_suffs(){
             print_new_PREV();
           #endif
 
-          //getchar();
+          pause;
 
 				} else { //p is in same group
 
@@ -557,7 +587,7 @@ void order_suffs(){
 
           info(("     ISA[s] = %u\n",ISA_[s]));
           info(("     ISA[p] = %u\n",ISA_[p]));
-          info(("     r = %u\n\n",r));
+          // info(("     r = %u\n\n",r));
           info(("     s = %u\n     p = %u\n     gstart = %u\n\n",s,p,gstart));
 
 					PREV_[p] = n_; //clear prev pointer, is not used in phase 2
@@ -578,16 +608,20 @@ void order_suffs(){
             print_new_PREV();
           #endif
 
-          //getchar();
+          pause;
 
 				}
 			} else { //prev points to nothing
+
+        prev_nothing++;
 
         #if Prints
 				    get_value = SA_[gstart];
         #endif
 
 				SA_[i] = SA_[gstart++]; //remove entry
+
+        shift_new_PREV();
 
         // new_PREV[i-gstart] = new_PREV[gstart-gstarttmp];
 
@@ -597,6 +631,10 @@ void order_suffs(){
 				#if Prints
 					print_order_suffs_rem();
 				#endif
+
+        #if Prints
+          print_new_PREV();
+        #endif
 
 			}
 
@@ -611,11 +649,10 @@ void order_suffs(){
 
 			++j; //also, count number of splitted groups
 			info(("  j = %u\n\n", j));
-
 		}
 
     prev_counter++;
-    r = rtmp;
+    // r = rtmp;
 
 		info(("\n"));
 		info(("while: gstart < gend is %s\n", gstart < gend ? "true" : "false"));
@@ -624,20 +661,45 @@ void order_suffs(){
 
 }
 
-void sort_new_PREV(){
+void shift_new_PREV(){
+  unsigned int last_value = new_PREV[0];
+  unsigned int last_value_loc = loc_PREV[0];
 
+  for (size_t k = 0; k < new_PREV_size-1; k++) {
+    loc_PREV[k] = loc_PREV[k+1];
+    new_PREV[k] = new_PREV[k+1];
+  }
+
+  new_PREV[new_PREV_size-1] = last_value;
+  new_PREV[new_PREV_size-1] = last_value_loc;
 }
 
-void shift_new_PREV(){
-  unsigned int last_value;
-  last_value = new_PREV[new_PREV_size-1];
-  for (size_t k = new_PREV_size-1; k > 0; --k) {
-    new_PREV[k] = new_PREV[k-1];
+void get_prev_GLINK(){
+  info((" gstart = %u\n",gstart));
+
+  for (i = gstart; i < gend_prev_suffs; ++i) {
+    info((" i = %u\n\n", i));
+
+    p = SA_[i];
+    info((" p <- SA[i] = %u\n", SA_[gstart]));
+
+    sr = get_GLINK(ISA_[p]);
+    info((" sr <- get_GLINK(ISA_[p]) = %u\n",get_GLINK(ISA_[p])));
+    // sr = GLINK[p];
+    // info((" sr <- GLINK[p] = %u\n", GLINK[p]));
+    // sr += gsize_get(GSIZE_, sr);
+            // info((" sr += GSIZE[sr] = %u\n\n", sr));
+    new_PREV[i-gstart] = sr;
+    info((" new_PREV[i-gstart] <- sr = %u\n\n",new_PREV[i-gstart]));
+    // gsize_inc(GSIZE_, sr);
+    // GLINK[p] = sr; //not needed
+    // new_PREV[i-gstart] = sr;
+            // info((" GLINK[p] <- sr = %u\n\n", sr));
   }
-  new_PREV[0] = last_value;
 }
 
 void rearrange_prev_suffs(){
+
 	while (j--) {
 
 		info(("j = %u\n",j));
@@ -649,28 +711,32 @@ void rearrange_prev_suffs(){
     info(("gend <- gend + GSIZE[gstart] = %u\n\n", gstart + gsize_get(GSIZE_, gstart)));
 
     //decrement group count of previous group suffixes, and move them to back
-		info(("-## Decrement group count of previous group suffixes, and move them to back\n\n"));
 		info(("i <- gend - 1 = %u\n\n", gend-1));
 
-		//OPTIMIZE: ///////////////////////////////////////////////////////////
+    loc += loc_shift_count;
+
+    info(("-## Decrement group count of previous group suffixes, and move them to back\n\n"));
+
 		decrement_group_count();
-		////////////////////////////////////////////////////////////////////////////
 
 		//set new GLINK for moved suffixes
-					info(("-## set new GLINK for moved suffixes\n\n"));
-		set_new_GLINK();
 
 		//set up GSIZE for newly created groups
 					info(("-## set up GSIZE for newly created groups\n\n"));
-		setup_new_GSIZE();
+    set_GSIZE2();
+		// setup_new_GSIZE();
 
 		gstart = gend;
 					info(("gstart <- gend = %u\n\n", gstart));
 
+    // if(prev_nothing != 0){
+    //   prev_nothing--;
+    // }
+
+    // loc--;
+
 	}
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 void decrement_group_count(){
@@ -680,15 +746,14 @@ void decrement_group_count(){
 						info((" p <- SA[i] = %u\n", SA_[i]));
             info((" i-gstart = %u\n",i-gstart));
 
-    sr = get_GLINK(ISA_[p]);
+    // sr = get_GLINK(ISA_[p]);
+    sr = new_PREV[i-gstart+loc];
 
-		// sr = GLINK[p];
-
-    info((" sr <- get_GLINK(ISA_[p]) = %u\n", get_GLINK(ISA_[p])));
+    info((" sr <-  new_PREV[i-gstart+loc] = %u\n", new_PREV[i-gstart+loc]));
 						info((" sr <- GLINK[p] = %u\n", sr));
 		sr += gsize_dec_get(GSIZE_, sr);
+    // sr_tmp = sr - 1;
 						info((" sr += gsize_dec_get(GSIZE, sr) = %u\n\n", sr));
-    //
 		//move p to back by exchanging it with last suffix s of group
 		s = SA_[sr];
 						info((" s <- SA[sr] = %u\n", SA_[sr]));
@@ -701,10 +766,15 @@ void decrement_group_count(){
 						info((" SA[sr] <- p = %u\n", p));
 						info((" ISA[p] <- sr = %u\n\n\n", sr));
 
+    // sr += gsize_get(GSIZE_, sr);
+		info((" sr += GSIZE[sr] = %u\n\n", sr));
+    // gsize_inc(GSIZE_, sr_tmp);
+
 		#if Prints
 			print_decrement_group_count();
 		#endif
-  // //
+
+    loc_shift_count++;
 	}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -720,44 +790,62 @@ unsigned int get_GLINK(unsigned int pos) {
 }
 
 
-void set_new_GLINK(){
+// void set_new_GLINK(){
+// 	for (i = gstarttmp; i < gendtmp; ++i) {
+// 						info((" i = %u\n\n", i));
+// 		p = SA_[i];
+// 						info((" p <- SA[i] = %u\n", SA_[i]));
+//     sr = get_GLINK(ISA_[p]);
+//     info((" sr <- get_GLINK(ISA_[p]) = %u\n",get_GLINK(ISA_[p])));
+//     // sr = GLINK[p];
+// 						info((" sr <- GLINK[p] = %u\n", GLINK[p]));
+// 		sr += gsize_get(GSIZE_, sr);
+// 						info((" sr += GSIZE[sr] = %u\n\n", sr));
+//     new_PREV[i-gstart] = sr;
+//             // gsize_inc(GSIZE_, sr);
+// 		// GLINK[p] = sr; //not needed
+//     // new_PREV[i-gstart] = sr;
+// 						info((" GLINK[p] <- sr = %u\n\n", sr));
+//             info((" new_PREV[i-gstart] <- sr = %u\n\n",new_PREV[i-gstart]));
+// 	}
+// }
+
+// void setup_new_GSIZE(){
+// 	for (i = gstart; i < gend; ++i) {
+// 						info((" i = %u\n", i));
+// 		// p = SA_[i];
+// 						info((" p <- SA[i] = %u \n", SA_[i]));
+// 		sr = GLINK[p];
+//     // sr = get_GLINK(ISA_[p]);
+//     // sr = new_PREV[i-gstart];
+//     info((" sr <- new_PREV[i-gstart] = %u\n\n", new_PREV[i-gstart]));
+//     info((" sr <- GLINK[p] = %u\n", GLINK[p]));
+//             //
+// 		// gsize_inc(GSIZE_, sr);
+// 						printf(" GSIZE[sr] <- %u\n\n", gsize_get(GSIZE_, sr));
+// 	}
+// }
+
+void set_GSIZE2(){
+  // loc_GLINK = get_GLINK(ISA_[p]); //GLINK of a previous pointer (p) from the process before
 	for (i = gstart; i < gend; ++i) {
 						info((" i = %u\n\n", i));
 		p = SA_[i];
 						info((" p <- SA[i] = %u\n", SA_[i]));
-    // sr = get_GLINK(ISA_[p]-i);
-    info((" sr <- get_GLINK(ISA_[p]) = %u\n",get_GLINK(ISA_[p])));
-    sr = GLINK[p];
-						info((" sr <- GLINK[p] = %u\n", GLINK[p]));
+    // sr = loc_GLINK;
+    // sr = GLINK[p];
+    sr = new_PREV[i-gstart+loc];
+    // info((" sr <- get_GLINK(ISA_[p]) = %u\n",loc_GLINK));
+		info((" sr <- new_PREV[i-gstart+loc] = %u\n", new_PREV[i-gstart+loc]));
 		sr += gsize_get(GSIZE_, sr);
-						info((" sr += GSIZE[sr] = %u\n\n", sr));
-            gsize_inc(GSIZE_, sr);
+						// info((" sr += GSIZE[sr] = %u\n\n", sr));
+    gsize_inc(GSIZE_, sr);
+    info((" GSIZE[sr] <- GSIZE[sr] + 1 = %u\n\n", gsize_get(GSIZE_, sr)));
 		// GLINK[p] = sr; //not needed
     // new_PREV[i-gstart] = sr;
-
-						info((" GLINK[p] <- sr = %u\n\n", sr));
-            info((" new_PREV[i-gstart] <- sr = %u\n\n",new_PREV[i-gstart]));
-            //
+						// info((" GLINK[p] <- sr = %u\n\n", sr));
+            // info((" new_PREV[i-gstart] <- sr = %u\n\n",new_PREV[i-gstart]));
 	}
-}
-
-void setup_new_GSIZE(){
-	for (i = gstart; i < gend; ++i) {
-						info((" i = %u\n", i));
-		// p = SA_[i];
-						info((" p <- SA[i] = %u \n", SA_[i]));
-		// sr = GLINK[p];
-    // sr = get_GLINK(ISA_[p]);
-    // sr = new_PREV[i-gstart];
-    info((" sr <- new_PREV[i-gstart] = %u\n\n", new_PREV[i-gstart]));
-    info((" sr <- GLINK[p] = %u\n", GLINK[p]));
-            //
-		// gsize_inc(GSIZE_, sr);
-						info((" GIZE[sr] <- GSIZE[sr] + 1 = %u\n\n", gsize_get(GSIZE_, sr)));
-						//printf(" GSIZE[sr] <- %u\n\n", gsize_get(GSIZE, sr));
-
-	}
-
 }
 
 /////////////// Print functions //////////////////////
@@ -885,8 +973,6 @@ void print_order_suffs(){
 		}else{
 			printf(" %3u", LA_[k]);
 		}
-
-		// printf(" %3u", LA_[k]);
 	}
 	printf("\n");
 	printf("\n");
