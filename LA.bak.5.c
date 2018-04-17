@@ -28,7 +28,7 @@ const unsigned char *S_;
 unsigned int *LA_, *SA_, *ISA_, *PREV_, *new_PREV,*loc_PREV;
 unsigned int n_;
 void *GSIZE_;
-unsigned int CONTEXTSIZE,prev_counter,new_PREV_size,n_jumps,loc,loc_GLINK,gend_prev_suffs,gstart_prev_suffs,prev_nothing,loc_shift_count;
+unsigned int CONTEXTSIZE,prev_counter,new_PREV_size,n_jumps,loc,loc_GLINK,gend_prev_suffs,gstart_prev_suffs,prev_nothing,loc_shift_count,group_size;
 
 
 void         gsize_set( void *g, unsigned int pos, unsigned int val );
@@ -64,7 +64,7 @@ void decrement_group_count();
 void set_new_GLINK();
 void setup_new_GSIZE();
 unsigned int get_GLINK(unsigned int pos);
-void shift_new_PREV();
+void shift_loc_new_PREV();
 void isort2(unsigned int start, unsigned int end);
 void set_GSIZE2();
 void get_prev_GLINK();
@@ -106,14 +106,6 @@ int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, un
     // printf("set up ISA, GLINK and SA\n");
 
     info(("\n"));
-
-    // printf("i\tS[i]\tLA[i]\tSA[i]\tISA[i]\tPREV[i]\tGSIZE[i]\n");
-    //printf("--------------------------------------------\n");
-    // for (i = 0; i < n_; i++) {
-    //     printf("%u\t%c\t%u\t%u\t%u\t%u\t%u\n", i,S_[i],LA_[i],SA_[i],ISA_[i],PREV_[i],((unsigned int *)GSIZE_)[i]);
-    // //    printf("--------------------------------------------\n");
-    // }
-    // printf("\n");
 
 		#if Prints
 			print_state();
@@ -187,7 +179,7 @@ void process_groups(){
 
     new_PREV_size = gsize_get(GSIZE_,gstart);
 
-    new_PREV = (unsigned int *)malloc( new_PREV_size * sizeof(unsigned int) );
+    new_PREV = (unsigned int *)calloc( new_PREV_size, sizeof(unsigned int) );
 
     loc_PREV = (unsigned int *)calloc( new_PREV_size , sizeof(unsigned int));
 
@@ -276,7 +268,7 @@ void process_groups(){
 		// //print_state();
         //ALGO 6
 		//rearrange previous suffixes stored in other groups
-    info(("-## set GLINK for moved suffixes\n\n"));
+    info(("--- set GLINK for moved suffixes\n\n"));
 
     // if(gstarttmp == gendtmp){
     //   new_PREV[0] = ISA_[SA_[gstarttmp]];
@@ -498,9 +490,10 @@ void order_suffs(){
         print_new_PREV();
       #endif
 
+      info(("  gstart = %u\n",gstart));
 			info(("  gend = %u\n", gend));
 			info(("  i = %u\n", i));
-			info(("  sr = %u\n", sr));
+			info(("  sr = %u\n\n", sr));
       // info(("  r = %u\n\n",r));
 
 			s = SA_[i];
@@ -544,7 +537,7 @@ void order_suffs(){
 
           // info(("     SA[gend] <- new_PREV[magic] = %u\n\n",new_PREV[i-gstart+1]));
 
-          // shift_new_PREV();
+          // shift_loc_new_PREV();
 
           // r -= n_jumps;
 
@@ -557,11 +550,14 @@ void order_suffs(){
 
 					#if Prints
 						print_order_suffs();
+            change = n_;
 					#endif
 
           #if Prints
             print_new_PREV();
           #endif
+
+
 
           pause;
 
@@ -583,6 +579,8 @@ void order_suffs(){
             loc_PREV[i-gstart] = new_PREV_size-1;
           }
 
+          // loc_PREV[i-gstart] = loc_PREV[]
+
           info(("     PREV[s] <- PREV[p] = %u\n",get_value));
 
           info(("     ISA[s] = %u\n",ISA_[s]));
@@ -594,7 +592,7 @@ void order_suffs(){
 
           // new_PREV[i-gstart+loc-1] = n_;
 
-          // shift_new_PREV();
+          // shift_loc_new_PREV();
 
 					info(("     PREV[p] <- n = %u\n\n",n_));
 					--i;
@@ -613,20 +611,22 @@ void order_suffs(){
 				}
 			} else { //prev points to nothing
 
-        prev_nothing++;
+        // prev_nothing++;
+        info(("   prev points to nothing: REMOVE\n"));
 
         #if Prints
 				    get_value = SA_[gstart];
         #endif
 
+        shift_loc_new_PREV();
+
 				SA_[i] = SA_[gstart++]; //remove entry
 
-        shift_new_PREV();
+
+        info(("   SA[i] <- SA[gstart] = %u\n\n", get_value));
 
         // new_PREV[i-gstart] = new_PREV[gstart-gstarttmp];
 
-        info(("   prev points to nothing: REMOVE\n"));
-				info(("   SA[i] <- SA[gstart] = %u\n\n", get_value));
 
 				#if Prints
 					print_order_suffs_rem();
@@ -661,17 +661,33 @@ void order_suffs(){
 
 }
 
-void shift_new_PREV(){
-  unsigned int last_value = new_PREV[0];
-  unsigned int last_value_loc = loc_PREV[0];
-
-  for (size_t k = 0; k < new_PREV_size-1; k++) {
-    loc_PREV[k] = loc_PREV[k+1];
-    new_PREV[k] = new_PREV[k+1];
+void shift_loc_new_PREV(){
+  for (size_t k = 0; k < gend-gstart; k++) {
+    if(k >= i-gstart){
+      if(loc_PREV[k] >= 0 && k < new_PREV_size - 1 ){
+        loc_PREV[k] = loc_PREV[k+1] + 1;
+      }else{
+        loc_PREV[k] = 0;
+      }
+    }
   }
 
-  new_PREV[new_PREV_size-1] = last_value;
-  new_PREV[new_PREV_size-1] = last_value_loc;
+  // if(loc_PREV[0] )
+
+// unsigned int tmp_shift;
+//
+//   for (unsigned int k = i-gstart+1; k < gend-gstart; k++) {
+//
+//     tmp_shift = loc_PREV[k];
+//     tmp_shift++;
+//
+//     if(tmp_shift == gend-gstart){
+//       loc_PREV[k] = 0;
+//     }else{
+//       loc_PREV[k] = tmp_shift;
+//     }
+//   }
+
 }
 
 void get_prev_GLINK(){
@@ -687,7 +703,7 @@ void get_prev_GLINK(){
     info((" sr <- get_GLINK(ISA_[p]) = %u\n",get_GLINK(ISA_[p])));
     // sr = GLINK[p];
     // info((" sr <- GLINK[p] = %u\n", GLINK[p]));
-    // sr += gsize_get(GSIZE_, sr);
+    // sr += gsize_get(GSIZE_, sr) - 1;
             // info((" sr += GSIZE[sr] = %u\n\n", sr));
     new_PREV[i-gstart] = sr;
     info((" new_PREV[i-gstart] <- sr = %u\n\n",new_PREV[i-gstart]));
@@ -720,6 +736,8 @@ void rearrange_prev_suffs(){
 		decrement_group_count();
 
 		//set new GLINK for moved suffixes
+    info(("-## set new GLINK for moved suffixes\n\n"));
+    set_new_GLINK();
 
 		//set up GSIZE for newly created groups
 					info(("-## set up GSIZE for newly created groups\n\n"));
@@ -750,9 +768,10 @@ void decrement_group_count(){
     sr = new_PREV[i-gstart+loc];
 
     info((" sr <-  new_PREV[i-gstart+loc] = %u\n", new_PREV[i-gstart+loc]));
-						info((" sr <- GLINK[p] = %u\n", sr));
+						// info((" sr <- GLINK[p] = %u\n", sr));
 		sr += gsize_dec_get(GSIZE_, sr);
-    // sr_tmp = sr - 1;
+    group_size++;
+
 						info((" sr += gsize_dec_get(GSIZE, sr) = %u\n\n", sr));
 		//move p to back by exchanging it with last suffix s of group
 		s = SA_[sr];
@@ -790,25 +809,26 @@ unsigned int get_GLINK(unsigned int pos) {
 }
 
 
-// void set_new_GLINK(){
-// 	for (i = gstarttmp; i < gendtmp; ++i) {
-// 						info((" i = %u\n\n", i));
-// 		p = SA_[i];
-// 						info((" p <- SA[i] = %u\n", SA_[i]));
-//     sr = get_GLINK(ISA_[p]);
-//     info((" sr <- get_GLINK(ISA_[p]) = %u\n",get_GLINK(ISA_[p])));
-//     // sr = GLINK[p];
-// 						info((" sr <- GLINK[p] = %u\n", GLINK[p]));
-// 		sr += gsize_get(GSIZE_, sr);
-// 						info((" sr += GSIZE[sr] = %u\n\n", sr));
-//     new_PREV[i-gstart] = sr;
-//             // gsize_inc(GSIZE_, sr);
-// 		// GLINK[p] = sr; //not needed
-//     // new_PREV[i-gstart] = sr;
-// 						info((" GLINK[p] <- sr = %u\n\n", sr));
-//             info((" new_PREV[i-gstart] <- sr = %u\n\n",new_PREV[i-gstart]));
-// 	}
-// }
+void set_new_GLINK(){
+	for (i = gstart; i < gend; ++i) {
+						info((" i = %u\n\n", i));
+		p = SA_[i];
+						info((" p <- SA[i] = %u\n", SA_[i]));
+    // sr = get_GLINK(ISA_[p]);
+    sr = new_PREV[i-gstart+loc];
+    info((" sr <- new_PREV[i-gstart+loc] = %u\n",new_PREV[i-gstart+loc]));
+    // sr = GLINK[p];
+						// info((" sr <- GLINK[p] = %u\n", GLINK[p]));
+		sr += gsize_get(GSIZE_, sr);
+						info((" sr += GSIZE[sr] = %u\n\n", sr));
+    new_PREV[i-gstart+loc] = sr;
+            // gsize_inc(GSIZE_, sr);
+		// GLINK[p] = sr; //not needed
+    // new_PREV[i-gstart] = sr;
+						// info((" GLINK[p] <- sr = %u\n\n", sr));
+            info((" new_PREV[i-gstart+loc] <- sr = %u\n\n",new_PREV[i-gstart+loc]));
+	}
+}
 
 // void setup_new_GSIZE(){
 // 	for (i = gstart; i < gend; ++i) {
@@ -837,7 +857,7 @@ void set_GSIZE2(){
     sr = new_PREV[i-gstart+loc];
     // info((" sr <- get_GLINK(ISA_[p]) = %u\n",loc_GLINK));
 		info((" sr <- new_PREV[i-gstart+loc] = %u\n", new_PREV[i-gstart+loc]));
-		sr += gsize_get(GSIZE_, sr);
+		// sr += gsize_get(GSIZE_, sr);
 						// info((" sr += GSIZE[sr] = %u\n\n", sr));
     gsize_inc(GSIZE_, sr);
     info((" GSIZE[sr] <- GSIZE[sr] + 1 = %u\n\n", gsize_get(GSIZE_, sr)));

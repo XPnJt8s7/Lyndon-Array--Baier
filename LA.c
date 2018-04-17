@@ -369,10 +369,6 @@ void algo3(){
         break;
 			}
 
-      //prev_suffs++;
-
-      //info(("  prev_suffs = %u\n",prev_suffs));
-
 			break;
 		}
 		info((" p <- PREV[p] = %u\n\n",PREV_[p]));
@@ -438,7 +434,7 @@ void order_suffs(){
 			s = SA_[i];
 							info(("  s <- SA[i] = %u\n", s));
 			p = PREV_[s];
-							info(("  p <- PREV[s] = %u\n", p));
+							info(("  p <- PREV[s] = %u\n\n", p));
 							info(("  p < n is %s\n\n", p < n_ ? "true" : "false"));
 			if (p < n_) {
 									info(("   ISA[p] = %u\n", ISA_[p]));
@@ -447,15 +443,12 @@ void order_suffs(){
 
           #if Prints
             get_value = SA_[gend-1];
+            change = p;
           #endif
 
 					SA_[i--] = SA_[--gend];
 
           LA_[p] += prev_counter * CONTEXTSIZE;
-
-          #if Prints
-            change = p;
-          #endif
 
 					info(("     SA[i] <- SA[gend-1] = %u\n",get_value));
 					info(("     gend <- %u\n", gend));
@@ -466,6 +459,7 @@ void order_suffs(){
 
 					#if Prints
 						print_order_suffs();
+            change = n_;
 					#endif
 
 				} else { //p is in same group
