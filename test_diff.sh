@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-./genere-texte 20 4 > texte
+./genere-texte 30 4 > texte
 valgrind ./LA_test -f texte > resLA
 valgrind ./newLA_test -f texte > resnewLA
 diff resLA resnewLA

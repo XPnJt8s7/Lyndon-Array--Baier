@@ -16,32 +16,35 @@ LA : LA_main.o LA.o
 LA_test : LA_main.o LA_test.o
 	$(CC) $(CFLAGS) $^ -o $@
 
+LA.o : LA.c
+	$(CC) $(CFLAGS) -D Prints -c $^ -o $@
+
+LA_test.o : LA.c
+	$(CC) $(CFLAGS) -c $^ -o $@
+
 LAB : LA_main.o LAB.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 LA_gprof : LA_main.o LA_gprof.o
 	gcc -Wall -pg $^ -o $@
 
-newLA : LA_main.o LA.bak.5.o
-	$(CC) $(CFLAGS) $^ -o $@
-
-newLA_test : LA_main.o LA.bak.5_test.o
-	$(CC) $(CFLAGS) $^ -o $@
-
-LA.bak.5.o : LA.bak.5.c
-	$(CC) $(CFLAGS) -D Prints -c $^ -o $@
-
-LA.bak.5_test.o : LA.bak.5.c
-	$(CC) $(CFLAGS) -c $^ -o $@
-
 LA_main.o : LA_main.c
 	$(CC) $(CFLAGS) -D Prints -c $^ -o $@
 
-LA.o : LA.c
+newLA : newLA_main.o newLA.o
+	$(CC) $(CFLAGS) $^ -o $@
+
+newLA_test : newLA_main.o newLA_test.o
+	$(CC) $(CFLAGS) $^ -o $@
+
+newLA.o : newLA.c
 	$(CC) $(CFLAGS) -D Prints -c $^ -o $@
 
-LA_test.o : LA.c
+newLA_test.o : newLA.c
 	$(CC) $(CFLAGS) -c $^ -o $@
+
+newLA_main.o : newLA_main.c
+	$(CC) $(CFLAGS) -D Prints -c $^ -o $@
 
 LAB.o : LA.bak.c
 	$(CC) $(CFLAGS) -D Prints -c $^ -o $@
