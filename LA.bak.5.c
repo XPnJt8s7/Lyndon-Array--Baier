@@ -531,11 +531,13 @@ void order_suffs(){
             loc_PREV[i-gstart] = loc_PREV[i-gstart+1] + 1;
           }
 
-          // new_PREV[i-gstart+loc] = new_PREV[i+1-gstart+loc];
+          new_PREV[i-gstart+loc] = new_PREV[gend-gstart-1];
+
+          loc_PREV[i-gstart+loc] = loc_PREV[gend-gstart-1] + (gend-1-i);
+
+          // info(("     SA[gend] <- new_PREV[i-gstart+loc] = %u\n\n",new_PREV[i-gstart+1]));
 
 					SA_[i--] = SA_[--gend];
-
-          // info(("     SA[gend] <- new_PREV[magic] = %u\n\n",new_PREV[i-gstart+1]));
 
           // shift_loc_new_PREV();
 
