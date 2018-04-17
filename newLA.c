@@ -16,7 +16,7 @@
 #define C_SIZE (UCHAR_MAX+1)
 #define C_CUM(c) C[c << 1]		//cumulative C array
 #define C_CNT(c) C[(c << 1) + 1] 	//C array counting characters
-#define GLINK PREV_			//alias
+// #define GLINK PREV_			//alias
 #define GENDLINK ISA_			//alias
 
 unsigned int i,j;
@@ -25,7 +25,7 @@ unsigned int s, p, sr;
 unsigned int tmp, gstarttmp, gendtmp;
 unsigned int C[2*C_SIZE]; //counts and cumulative counts
 const unsigned char *S_;
-unsigned int *LA_, *SA_, *ISA_, *PREV_, *new_PREV,*loc_PREV;
+unsigned int *LA_, *SA_, *ISA_, *new_PREV,*loc_PREV;
 unsigned int n_;
 void *GSIZE_;
 unsigned int CONTEXTSIZE,prev_counter,new_PREV_size,n_jumps,loc,loc_GLINK,gend_prev_suffs,gstart_prev_suffs,prev_nothing,loc_shift_count,group_size;
@@ -70,14 +70,13 @@ void set_GSIZE2();
 void get_prev_GLINK();
 
 
-int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned int *ISA , unsigned int *PREV, void *GSIZE, unsigned int n) {
+int newLA(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned int *ISA, void *GSIZE, unsigned int n) {
 
 	S_ = S;
 	LA_ = LA;
 	SA_ = SA;
 	ISA_ = ISA;
 	GSIZE_ = GSIZE;
-	PREV_ = PREV;
 	n_ = n;
 
 	if (n_ == 0) return 0;
@@ -160,7 +159,7 @@ void setup_rest(){
 	for (i = n_-1; i < n_; --i) { //set up ISA, GLINK and SA
 		gstart = C_CUM(S_[i]);
 		sr = gstart + --C_CNT(S_[i]);
-		GLINK[i] = gstart;
+		// GLINK[i] = gstart;
 		ISA_[i] = sr;
 		SA_[sr] = i;
 		LA_[i] = 1;
@@ -371,7 +370,7 @@ void compute_prev(){
 
 		info(("\n"));
 
-		PREV_[s] = p; //line 14
+		// PREV_[s] = p; //line 14
     new_PREV[i-gstart] = p; //line 14
 
 		info(("PREV[s] <- p = %u\n\n", p));
@@ -571,10 +570,11 @@ void order_suffs(){
 				} else { //p is in same group
 
           #if Prints
-            get_value = PREV_[p];
+            // get_value = PREV_[p];
+            get_value = 12345;
           #endif
 
-					PREV_[s] = PREV_[p];
+					// PREV_[s] = PREV_[p];
 
           // if(i-gstart-1+loc >= 0){
           //   new_PREV[i-gstart+loc] = new_PREV[i-gstart-1+loc];
@@ -597,7 +597,7 @@ void order_suffs(){
           // info(("     r = %u\n\n",r));
           // info(("     s = %u\n     p = %u\n     gstart = %u\n\n",s,p,gstart));
 
-					PREV_[p] = n_; //clear prev pointer, is not used in phase 2
+					// PREV_[p] = n_; //clear prev pointer, is not used in phase 2
 
           // new_PREV[i-gstart+loc-1] = n_;
 
@@ -907,17 +907,17 @@ void print_state(){
 	}
 			printf("\n");
 			printf("\n");
-	printf("%9s","PREV[i] ");
-	for (k = 0; k < n_; k++) {
-			if (PREV_[k] < n_) {
-				printf(" %3u", PREV_[k]);
-				/* code */
-			}else{
-				printf(" %3s","inf");
-			}
-	}
-			printf("\n");
-			printf("\n");
+	// printf("%9s","PREV[i] ");
+	// for (k = 0; k < n_; k++) {
+	// 		if (PREV_[k] < n_) {
+	// 			printf(" %3u", PREV_[k]);
+	// 			/* code */
+	// 		}else{
+	// 			printf(" %3s","inf");
+	// 		}
+	// }
+	// 		printf("\n");
+	// 		printf("\n");
 	printf("%9s","GSIZE[i] ");
 	for (k = 0; k < n_; k++) {
 			printf(" %3u", ((unsigned int *)GSIZE_)[k]);
@@ -951,22 +951,22 @@ void print_algo3(){
 			printf("\n");
 			printf("\n");
 	printf("%9s","PREV[i] ");
-	for (k = 0; k < n_; k++) {
-			if (PREV_[k] < n_) {
-				if (k == s) {
-					printf(BLUE" %3u"RESET, PREV_[k]);
-				} else {
-					printf(" %3u", PREV_[k]);
-				}
-			}else{
-				if (k == s) {
-					printf(CYAN" %3s"RESET, "inf");
-				} else {
-					printf(" %3s","inf");
-				}
-
-			}
-	}
+	// for (k = 0; k < n_; k++) {
+	// 		if (PREV_[k] < n_) {
+	// 			if (k == s) {
+	// 				printf(BLUE" %3u"RESET, PREV_[k]);
+	// 			} else {
+	// 				printf(" %3u", PREV_[k]);
+	// 			}
+	// 		}else{
+	// 			if (k == s) {
+	// 				printf(CYAN" %3s"RESET, "inf");
+	// 			} else {
+	// 				printf(" %3s","inf");
+	// 			}
+  //
+	// 		}
+	// }
 			printf("\n");
 			printf("\n");
 	printf("%9s","GSIZE[i] ");
@@ -1013,16 +1013,16 @@ void print_order_suffs(){
 	}
 	printf("\n");
 	printf("\n");
-	printf("%9s","PREV[i] ");
-	for (k = 0; k < n_; k++) {
-		if (PREV_[k] < n_) {
-			printf(" %3u", PREV_[k]);
-		}else{
-			printf(" %3s","inf");
-		}
-	}
-	printf("\n");
-	printf("\n");
+	// printf("%9s","PREV[i] ");
+	// for (k = 0; k < n_; k++) {
+	// 	if (PREV_[k] < n_) {
+	// 		printf(" %3u", PREV_[k]);
+	// 	}else{
+	// 		printf(" %3s","inf");
+	// 	}
+	// }
+	// printf("\n");
+	// printf("\n");
 	printf("%9s","GSIZE[i] ");
 	for (k = 0; k < n_; k++) {
 		printf(" %3u", ((unsigned int *)GSIZE_)[k]);
@@ -1061,17 +1061,17 @@ void print_order_suffs_rem(){
 	}
 	printf("\n");
 	printf("\n");
-	printf("%9s","PREV[i] ");
-	for (k = 0; k < n_; k++) {
-		if (PREV_[k] < n_) {
-			printf(" %3u", PREV_[k]);
-			/* code */
-		}else{
-			printf(" %3s","inf");
-		}
-	}
-	printf("\n");
-	printf("\n");
+	// printf("%9s","PREV[i] ");
+	// for (k = 0; k < n_; k++) {
+	// 	if (PREV_[k] < n_) {
+	// 		printf(" %3u", PREV_[k]);
+	// 		/* code */
+	// 	}else{
+	// 		printf(" %3s","inf");
+	// 	}
+	// }
+	// printf("\n");
+	// printf("\n");
 	printf("%9s","GSIZE[i] ");
 	for (k = 0; k < n_; k++) {
 		printf(" %3u", ((unsigned int *)GSIZE_)[k]);
@@ -1107,25 +1107,25 @@ void print_order_suffs_prev(){
 	}
 			printf("\n");
 			printf("\n");
-	printf("%9s","PREV[i] ");
-	for (k = 0; k < n_; k++) {
-		if (k == s ||k == p) {
-			if (PREV_[k] < n_) {
-				printf(" \x1b[32;1m%3u\x1b[m", PREV_[k]);
-			}else{
-				printf(" \x1b[32;1m%3s\x1b[m","inf");
-			}
-			// printf(" \x1b[32;1m%3u\x1b[m", SA_[k]);
-		}else{
-			if (PREV_[k] < n_) {
-				printf(" %3u", PREV_[k]);
-			}else{
-				printf(" %3s","inf");
-			}
-		}
-	}
-			printf("\n");
-			printf("\n");
+	// printf("%9s","PREV[i] ");
+	// for (k = 0; k < n_; k++) {
+	// 	if (k == s ||k == p) {
+	// 		if (PREV_[k] < n_) {
+	// 			printf(" \x1b[32;1m%3u\x1b[m", PREV_[k]);
+	// 		}else{
+	// 			printf(" \x1b[32;1m%3s\x1b[m","inf");
+	// 		}
+	// 		// printf(" \x1b[32;1m%3u\x1b[m", SA_[k]);
+	// 	}else{
+	// 		if (PREV_[k] < n_) {
+	// 			printf(" %3u", PREV_[k]);
+	// 		}else{
+	// 			printf(" %3s","inf");
+	// 		}
+	// 	}
+	// }
+	// 		printf("\n");
+	// 		printf("\n");
 	printf("%9s","GSIZE[i] ");
 	for (k = 0; k < n_; k++) {
 			printf(" %3u", ((unsigned int *)GSIZE_)[k]);
@@ -1170,17 +1170,17 @@ void print_GENDLINK_suffs(){
 	}
 			printf("\n");
 			printf("\n");
-	printf("%9s","PREV[i] ");
-	for (k = 0; k < n_; k++) {
-			if (PREV_[k] < n_) {
-				printf(" %3u", PREV_[k]);
-				/* code */
-			}else{
-				printf(" %3s","inf");
-			}
-	}
-			printf("\n");
-			printf("\n");
+	// printf("%9s","PREV[i] ");
+	// for (k = 0; k < n_; k++) {
+	// 		if (PREV_[k] < n_) {
+	// 			printf(" %3u", PREV_[k]);
+	// 			/* code */
+	// 		}else{
+	// 			printf(" %3s","inf");
+	// 		}
+	// }
+	// 		printf("\n");
+	// 		printf("\n");
 	printf("%9s","GSIZE[i] ");
 	for (k = 0; k < n_; k++) {
 			printf(" %3u", ((unsigned int *)GSIZE_)[k]);
@@ -1225,16 +1225,16 @@ void print_decrement_group_count(){
 	}
 			printf("\n");
 			printf("\n");
-	printf("%9s","PREV[i] ");
-	for (k = 0; k < n_; k++) {
-			if (PREV_[k] < n_) {
-				printf(" %3u", PREV_[k]);
-			}else{
-				printf(" %3s","inf");
-			}
-	}
-			printf("\n");
-			printf("\n");
+	// printf("%9s","PREV[i] ");
+	// for (k = 0; k < n_; k++) {
+	// 		if (PREV_[k] < n_) {
+	// 			printf(" %3u", PREV_[k]);
+	// 		}else{
+	// 			printf(" %3s","inf");
+	// 		}
+	// }
+	// 		printf("\n");
+	// 		printf("\n");
 	printf("%9s","GSIZE[i] ");
 	for (k = 0; k < n_; k++) {
 			printf(" %3u", ((unsigned int *)GSIZE_)[k]);

@@ -11,4 +11,6 @@
 
 int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned int *ISA , unsigned int *PREV, void *GSIZE, unsigned int n);
 
+int newLA(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned int *ISA , void *GSIZE, unsigned int n);
+
 #endif /* end of include guard: AC_H */

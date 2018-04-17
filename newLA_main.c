@@ -101,7 +101,7 @@ if(f_loc > 0){
     //printf("1\n");
     unsigned int * ISA = (unsigned int *)malloc( n * sizeof(unsigned int) );
     //printf("1\n");
-    unsigned int * PREV = (unsigned int *)malloc( n * sizeof(unsigned int) );
+    // unsigned int * PREV = (unsigned int *)malloc( n * sizeof(unsigned int) );
     //printf("1\n");
     void * GSIZE = calloc(n, sizeof(unsigned int));
     //printf("1\n");
@@ -109,8 +109,8 @@ if(f_loc > 0){
     //printf("1\n");
 
 
-    if (!PREV || !GSIZE || !ISA || !LA || !SA)	{
-		    free(ISA); free(PREV); free(GSIZE); free(LA); free(SA);
+    if (!GSIZE || !ISA || !LA || !SA)	{
+		    free(ISA); free(GSIZE); free(LA); free(SA);
 		    return -2;
 	  }
 
@@ -119,7 +119,7 @@ if(f_loc > 0){
   // int j = 0;
   // for(;j<0x8fffffff;j++);
 
-    if (gsaca_phase_1(S, LA, SA, ISA, PREV, GSIZE, n) != 0) {
+    if (newLA(S, LA, SA, ISA, GSIZE, n) != 0) {
        printf("Out of Memory\n");
        return 1;
     }
@@ -154,7 +154,7 @@ if(f_loc > 0){
 
     free(SA);
     free(ISA);
-    free(PREV);
+    // free(PREV);
     free(GSIZE);
     free(LA);
     free(S);
