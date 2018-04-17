@@ -279,7 +279,7 @@ void process_groups(){
 
     info(("SA[gendtmp] <- gstarttmp = %u\n\n",gstarttmp));
 
-    info(("################# End of group %u, gstart = %u ###################\n",count++,gstarttmp));
+    info(("################# End of group %u, gstart = %u ###################\n",++count,gstarttmp));
 
 		info(("\n"));
     #if Prints

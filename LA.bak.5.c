@@ -175,7 +175,7 @@ void process_groups(){
 		gstarttmp = gstart;
     gendtmp = gend;
 
-    // isort2(gstart,gend);
+    isort2(gstart,gend);
 
     new_PREV_size = gsize_get(GSIZE_,gstart);
 
@@ -307,7 +307,7 @@ void process_groups(){
 
     info(("SA[gendtmp] <- gstarttmp = %u\n\n",gstarttmp));
 
-    info(("################# End of group %u, gstart = %u ###################\n",count++,gstarttmp));
+    info(("################# End of group %u, gstart = %u ###################\n",++count,gstarttmp));
 
 		info(("\n"));
     #if Prints
@@ -333,17 +333,24 @@ void get_gstart(){
 }
 
 // Trie par insertion
-// void isort2(unsigned int start, unsigned int end){
-//   unsigned int i, j;
-//   unsigned int t,t_ISA;
-//   for (i = start; i < end+1; i++){
-//     for (j = i; j > start && SA_[j-1] > SA_[j]; j--) {
-//       t = SA_[j]; t_ISA = ISA_[j];
-//       ISA_[j] = ISA_[j-1];ISA_[j-1] = t_ISA;
-//       SA_[j] = SA_[j-1];SA_[j-1] = t;
-//     }
-//   }
-// }
+void isort2(unsigned int start, unsigned int end){
+  unsigned int i, j;
+  unsigned int t,t_ISA;
+  for (i = start; i <= end; i++){
+    for (j = i; j > start && SA_[j-1] > SA_[j]; j--) {
+      t = SA_[j];
+      t_ISA = ISA_[SA_[j]];
+
+      ISA_[SA_[j]] = ISA_[SA_[j-1]];
+      ISA_[SA_[j-1]] = t_ISA;
+
+      // ISA_[j]
+
+      SA_[j] = SA_[j-1];
+      SA_[j-1] = t;
+    }
+  }
+}
 
 void compute_prev(){
 	for (i = gend; i >= gstart; --i) {
@@ -411,7 +418,7 @@ void algo3(){
 			break;
 		}
 		// info((" p <- PREV[p] = %u\n\n",PREV_[p]));
-    info(("p-- = %u\n\n",p));
+    info(("p-- = %u\n\n",p-1));
 	}
 
   #if Prints
@@ -531,7 +538,7 @@ void order_suffs(){
             loc_PREV[i-gstart] = loc_PREV[i-gstart+1] + 1;
           }
 
-          new_PREV[i-gstart+loc] = new_PREV[gend-gstart-1];
+          // new_PREV[i-gstart+loc] = new_PREV[gend-gstart-1]; // "à éliminer"
 
           loc_PREV[i-gstart+loc] = loc_PREV[gend-gstart-1] + (gend-1-i);
 
