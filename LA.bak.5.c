@@ -578,7 +578,9 @@ void order_suffs(){
           if(loc_PREV[i-gstart] > 0){
             loc_PREV[i-gstart]--;
           }else{
-            loc_PREV[i-gstart] = new_PREV_size-1;
+            // loc_PREV[i-gstart] = new_PREV_size-1;  //test 1
+            loc_PREV[i-gstart] = i-gend;              //test 2
+            // loc_PREV[i-gstart] = gend-gstart-1;
           }
 
           // loc_PREV[i-gstart] = loc_PREV[]
