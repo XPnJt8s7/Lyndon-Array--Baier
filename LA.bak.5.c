@@ -579,18 +579,18 @@ void order_suffs(){
             loc_PREV[i-gstart]--;
           }else{
             // loc_PREV[i-gstart] = new_PREV_size-1;  //test 1
-            loc_PREV[i-gstart] = i-gend;              //test 2
-            // loc_PREV[i-gstart] = gend-gstart-1;
+            // loc_PREV[i-gstart] = i-gend;           //test 2
+            loc_PREV[i-gstart] = new_PREV_size-1-(i-gstart);           //test 3
           }
 
-          // loc_PREV[i-gstart] = loc_PREV[]
+          info(("     loc_PREV[i-gstart] <- new_PREV_size - i = %u\n\n",loc_PREV[i-gstart]));
 
           info(("     PREV[s] <- PREV[p] = %u\n",get_value));
 
-          info(("     ISA[s] = %u\n",ISA_[s]));
-          info(("     ISA[p] = %u\n",ISA_[p]));
+          // info(("     ISA[s] = %u\n",ISA_[s]));
+          // info(("     ISA[p] = %u\n",ISA_[p]));
           // info(("     r = %u\n\n",r));
-          info(("     s = %u\n     p = %u\n     gstart = %u\n\n",s,p,gstart));
+          // info(("     s = %u\n     p = %u\n     gstart = %u\n\n",s,p,gstart));
 
 					PREV_[p] = n_; //clear prev pointer, is not used in phase 2
 
