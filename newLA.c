@@ -487,13 +487,12 @@ void order_suffs(){
 
     info((" prev_counter = %u\n\n",prev_counter));
 
+    #if Prints
+      printf("\n\n");
+      print_new_PREV();
+    #endif
+
 		while (i >= gstart) {
-
-      #if Prints
-        printf(" \n\n");
-        print_new_PREV();
-      #endif
-
       info(("  gstart = %u\n",gstart));
 			info(("  gend = %u\n", gend));
 			info(("  i = %u\n", i));
@@ -530,16 +529,19 @@ void order_suffs(){
 
           LA_[p] += prev_counter * CONTEXTSIZE;
 
-          if(i-gstart < new_PREV_size && i-gstart+1 < new_PREV_size){
-            // printf("asdf %u\n",i-gstart-1);
-            loc_PREV[i-gstart] = loc_PREV[i-gstart+1] + 1;
-          }
+          // if(i-gstart < new_PREV_size && i-gstart+1 < new_PREV_size){
+          //   // printf("asdf %u\n",i-gstart-1);
+          //   loc_PREV[i-gstart] = loc_PREV[i-gstart+1] + 1;
+          // }
 
           // new_PREV[i-gstart+loc] = new_PREV[gend-gstart-1]; // "à éliminer"
 
-          loc_PREV[i-gstart+loc] = loc_PREV[gend-gstart-1] + (gend-1-i);
+          loc_PREV[i-gstart] = loc_PREV[gend-gstart-1] + (gend-1-i);
 
           // info(("     SA[gend] <- new_PREV[i-gstart+loc] = %u\n\n",new_PREV[i-gstart+1]));
+
+          // i++ => get value, the add 1
+          // ++i => add 1, then get value
 
 					SA_[i--] = SA_[--gend];
 
@@ -563,16 +565,14 @@ void order_suffs(){
             print_new_PREV();
           #endif
 
-
-
           pause;
 
 				} else { //p is in same group
 
-          #if Prints
-            // get_value = PREV_[p];
-            get_value = 12345;
-          #endif
+          // #if Prints
+          //   // get_value = PREV_[p];
+          //   get_value = 12345;
+          // #endif
 
 					// PREV_[s] = PREV_[p];
 
@@ -590,7 +590,7 @@ void order_suffs(){
 
           info(("     loc_PREV[i-gstart] <- new_PREV_size - 1 - (i-gstart) = %u\n\n",loc_PREV[i-gstart]));
 
-          info(("     PREV[s] <- PREV[p] = %u\n",get_value));
+          // info(("     PREV[s] <- PREV[p] = %u\n",get_value));
 
           // info(("     ISA[s] = %u\n",ISA_[s]));
           // info(("     ISA[p] = %u\n",ISA_[p]));
@@ -706,7 +706,7 @@ void get_prev_GLINK(){
     info((" i = %u\n\n", i));
 
     p = SA_[i];
-    info((" p <- SA[i] = %u\n", SA_[gstart]));
+    info((" p <- SA[i] = %u\n", SA_[i]));
 
     sr = get_GLINK(ISA_[p]);
     info((" sr <- get_GLINK(ISA_[p]) = %u\n",get_GLINK(ISA_[p])));
@@ -950,7 +950,7 @@ void print_algo3(){
 	}
 			printf("\n");
 			printf("\n");
-	printf("%9s","PREV[i] ");
+	// printf("%9s","PREV[i] ");
 	// for (k = 0; k < n_; k++) {
 	// 		if (PREV_[k] < n_) {
 	// 			if (k == s) {
@@ -967,8 +967,8 @@ void print_algo3(){
   //
 	// 		}
 	// }
-			printf("\n");
-			printf("\n");
+			// printf("\n");
+			// printf("\n");
 	printf("%9s","GSIZE[i] ");
 	for (k = 0; k < n_; k++) {
 		if (k == gset) {
@@ -1245,9 +1245,12 @@ void print_decrement_group_count(){
 
 void print_new_PREV(){
   printf("%9s","SA[i] ");
-  for (k = 0; k < n_; k++) {
-    if(k >= gstart && k < gend)
+  for (k = gstarttmp; k < gendtmp; k++) {
+    if(k >= gstart && k < gend){
       printf(" %3u", SA_[k]);
+    }else{
+      printf(" %3s"," ");
+    }
   }
       printf("\n\n");
   printf("%9s","nPREV[i] ");
