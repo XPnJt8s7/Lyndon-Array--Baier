@@ -28,7 +28,7 @@ const unsigned char *S_;
 unsigned int *LA_, *SA_, *ISA_, *PREV_;
 unsigned int n_;
 void *GSIZE_;
-unsigned int CONTEXTSIZE,prev_counter;
+unsigned int CONTEXTSIZE,prev_counter,gn;
 
 
 void         gsize_set( void *g, unsigned int pos, unsigned int val );
@@ -130,9 +130,12 @@ int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, un
   #endif
     info(("process groups from highest to lowest\n\n"));
 
+    gn=0;
+
 		process_groups();
 
     info(("end of programme\n\n\n"));
+    printf("groups = %u\n",gn);
     return 0;
 }
 
@@ -280,7 +283,7 @@ void process_groups(){
     info(("SA[gendtmp] <- gstarttmp = %u\n\n",gstarttmp));
 
     info(("################# End of group %u, gstart = %u ###################\n",++count,gstarttmp));
-
+    gn++;
 		info(("\n"));
     #if Prints
 		  print_state();

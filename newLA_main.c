@@ -125,7 +125,6 @@ if(f_loc > 0){
     }
 
     #if Prints
-
       unsigned int k;
       // printf("\n\n\n");
 

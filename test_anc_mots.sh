@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-mots=(graindraining tgtggagggg gaggctcgcg tgtttttctg gacgaggcgg acacggaacc acgaccccaa)
+mots=(graindraining tgtggagggg gaggctcgcg tgtttttctg gacgaggcgg acacggaacc acgaccccaa aeeeaaeabceeedee)
 
 for mot in ${mots[*]}
 do

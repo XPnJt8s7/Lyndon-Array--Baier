@@ -28,7 +28,7 @@ const unsigned char *S_;
 unsigned int *LA_, *SA_, *ISA_, *new_PREV,*loc_PREV;
 unsigned int n_;
 void *GSIZE_;
-unsigned int CONTEXTSIZE,prev_counter,new_PREV_size,n_jumps,loc,loc_GLINK,gend_prev_suffs,gstart_prev_suffs,prev_nothing,loc_shift_count,group_size;
+unsigned int CONTEXTSIZE,prev_counter,new_PREV_size,n_jumps,loc,loc_GLINK,gend_prev_suffs,gstart_prev_suffs,prev_nothing,loc_shift_count,group_size,gn,old_PREV_size,realloc_count;
 
 
 void         gsize_set( void *g, unsigned int pos, unsigned int val );
@@ -118,10 +118,16 @@ int newLA(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned i
     count = 1;
   #endif
     info(("process groups from highest to lowest\n\n"));
-
+    gn=realloc_count=0;
+    new_PREV_size=0;
 		process_groups();
 
+    free(new_PREV);
+    free(loc_PREV);
+    new_PREV = loc_PREV = 0;
+
     info(("end of programme\n\n\n"));
+    printf("groups = %u\nreallocs = %u\n",gn,realloc_count);
     return 0;
 }
 
@@ -176,11 +182,33 @@ void process_groups(){
 
     isort2(gstart,gend);
 
+    old_PREV_size = new_PREV_size;
+
     new_PREV_size = gsize_get(GSIZE_,gstart);
 
-    new_PREV = (unsigned int *)calloc( new_PREV_size, sizeof(unsigned int) );
+    if(new_PREV_size > old_PREV_size){
+      if(old_PREV_size == 0){
+        new_PREV = (unsigned int *)malloc(new_PREV_size * sizeof(unsigned int));
+        loc_PREV = (unsigned int *)malloc(new_PREV_size * sizeof(unsigned int));
 
-    loc_PREV = (unsigned int *)calloc( new_PREV_size , sizeof(unsigned int));
+        for (size_t k = 0; k < new_PREV_size; k++) {
+          new_PREV[k] = loc_PREV[k] = 0;
+        }
+
+      }else{
+        new_PREV = (unsigned int *)realloc(new_PREV, new_PREV_size * sizeof(unsigned int));
+        loc_PREV = (unsigned int *)realloc(loc_PREV, new_PREV_size * sizeof(unsigned int));
+
+        for (size_t k = 0; k < new_PREV_size; k++) {
+          new_PREV[k] = loc_PREV[k] = 0;
+        }
+
+        realloc_count++;
+      }
+    }
+
+    // new_PREV = (unsigned int *)calloc( new_PREV_size, sizeof(unsigned int));
+    // loc_PREV = (unsigned int *)calloc( new_PREV_size , sizeof(unsigned int));
 
     info(("new_PREV of %u slots\n\n",new_PREV_size));
 
@@ -294,9 +322,9 @@ void process_groups(){
   		setup_new_GSIZE();
 		*/
 
-    free(new_PREV);
-    free(loc_PREV);
-    new_PREV = loc_PREV = 0;
+    // free(new_PREV);
+    // free(loc_PREV);
+    // new_PREV = loc_PREV = 0;
 
 		//prepare current group for phase 2
 		SA_[gendtmp] = gstarttmp; //counter where to place next entry
@@ -307,7 +335,7 @@ void process_groups(){
     info(("SA[gendtmp] <- gstarttmp = %u\n\n",gstarttmp));
 
     info(("################# End of group %u, gstart = %u ###################\n",++count,gstarttmp));
-
+    gn++;
 		info(("\n"));
     #if Prints
 		  print_state();
