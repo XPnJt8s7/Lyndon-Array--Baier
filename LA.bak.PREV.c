@@ -382,44 +382,6 @@ void algo3(){
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////////
-// void algo3mk2(){
-//   #if Prints
-//     printf(" *** algo3mk2 ***\n\n");
-//   #endif
-//
-// 	for (p = s-1; p < n_; p = PREV_[p]) {
-// 		info((" ISA[p] = %u\n", ISA_[p]));
-// 		info((" ISA[p] <= gend is %s\n\n", ISA_[p] <= gend ? "true" : "false"));
-//
-//     if(ISA_[p] <= gend && ISA_[p] <= gstart){
-//       break;
-//     }
-//
-// 		// if (ISA_[p] <= gend) {
-// 		// 	info(("  ISA[p] >= gstart is %s\n\n", ISA_[p] >= gstart ? "true" : "false"));
-// 		// 	if (ISA_[p] >= gstart) {
-// 		// 		gsize_set(GSIZE_, ISA_[p], 1); //mark ISA[p]  //comment
-//     //
-//     //     n_group_reordered++;
-//     //
-//     //     #if Prints
-//     //       gset = ISA_[p];
-//     //     #endif
-//     //
-// 		// 		info(("   GSIZE[ISA[p]] <- 1\n\n"));
-// 		// 	}
-// 		// 	break;
-// 		// }
-//
-// 		info((" p <- PREV[p] = %u\n\n",PREV_[p]));
-// 	}
-//
-//   #if Prints
-//     printf(" ***       ***\n\n");
-//   #endif
-// }
-///////////////////////////////////////////////////////////////////////////////////
 
 void set_GENDLINK_suffs(){
 	for (i = gstart; i <= gend; ++i) {

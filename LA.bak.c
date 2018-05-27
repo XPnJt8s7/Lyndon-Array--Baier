@@ -39,12 +39,9 @@ void print_decrement_group_count();
 void print_GENDLINK_suffs();
 void print_order_suffs_rem();
 
-// unsigned int * GROUP = (unsigned int *)malloc( gsize_get(GSIZE_, gstart) * sizeof(unsigned int) );
-
 void setup_GSIZE();
 void setup_rest();
 void process_groups();
-void get_gstart();
 void compute_prev();
 void set_GENDLINK_suffs();
 void order_suffs();
@@ -55,13 +52,6 @@ void set_new_GLINK();
 void setup_new_GSIZE();
 
 int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned int *ISA , unsigned int *PREV, void *GSIZE, unsigned int n) {
-	//unsigned int *ISA, *PREV;
-	//void *GSIZE;
-	// unsigned int i,j;
-	// unsigned int gstart, gend;
-	// unsigned int s, p, sr;
-	// unsigned int tmp, gstarttmp, gendtmp;
-	// unsigned int C[2*C_SIZE]; //counts and cumulative counts
 
 	S_ = S;
 	LA_ = LA;
@@ -96,16 +86,7 @@ int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, un
 
     // printf("set up ISA, GLINK and SA\n");
 
-
     info(("\n"));
-
-    // printf("i\tS[i]\tLA[i]\tSA[i]\tISA[i]\tPREV[i]\tGSIZE[i]\n");
-    //printf("--------------------------------------------\n");
-    // for (i = 0; i < n_; i++) {
-    //     printf("%u\t%c\t%u\t%u\t%u\t%u\t%u\n", i,S_[i],LA_[i],SA_[i],ISA_[i],PREV_[i],((unsigned int *)GSIZE_)[i]);
-    // //    printf("--------------------------------------------\n");
-    // }
-    // printf("\n");
 
 		#if Prints
 			print_state();
@@ -168,7 +149,7 @@ void process_groups(){
 	for (gend = n_-1; gend > 0; gend = gstarttmp-1) {
     n_group_reordered = 1;
 				//getgstart
-		get_gstart();
+		gstart = GLINK[SA_[gend]];
 
 		gstarttmp = gstart;
     gendtmp = gend;
@@ -223,9 +204,7 @@ void process_groups(){
         info(("j = 0\n\n"));
         info(("do while gstart < gend\n\n"));
 
-		//OPTIMIZE: ////////////////////////////////////////////////////////////////
 		order_suffs();
-		////////////////////////////////////////////////////////////////////////////
 
         info(("\n"));
 
@@ -259,26 +238,6 @@ void process_groups(){
     info(("\n"));
 	}
 
-
-	//
-	//
-	// //free(GROUP);
-	//
-	// info(("\n\n"));
-	// info(("hello\n"));
-	// info(("\n\n"));
-
-}
-
-void get_gstart(){
-	for (i = gend; i > 0; --i) {
-			tmp = gsize_get(GSIZE_, i);
-			//printf("i = %u, tmp = %u\n\n", i, tmp);
-			if (tmp != 0) {
-					gstart = gend - tmp + 1;
-					break;
-			}
-	}
 }
 
 void compute_prev(){
@@ -299,9 +258,7 @@ void compute_prev(){
 		  gset = n_+1;
     #endif
 
-		//OPTIMIZE: //////////////////////////////////////////////////////////
 		algo3();
-		//////////////////////////////////////////////////////////////////////
 
 		info(("\n"));
 		PREV_[s] = p; //line 14
@@ -330,8 +287,6 @@ void algo3(){
 			if (ISA_[p] >= gstart) {
 				gsize_set(GSIZE_, ISA_[p], 1); //mark ISA[p]
 
-        n_group_reordered++;
-
         #if Prints
           gset = ISA_[p];
         #endif
@@ -359,7 +314,7 @@ void set_GENDLINK_suffs(){
 					info(("i = %d\n\n", i));
 		s = SA_[i];
 					info((" s <- SA[%u] = %u\n", i,SA_[i]));
-		//GENDLINK[s] = gend;
+		//GENDLINK[s] = gend; //not needed
 					info((" GENDLINK[s] <- gend = %u\n", GENDLINK[s]));
 					info((" GSIZE[%u] == 0 is %s\n\n",i, gsize_get(GSIZE_, i) == 0 ? "true" : "false"));
 		if (gsize_get(GSIZE_, i) == 0) { //i is not marked
@@ -395,7 +350,7 @@ void order_suffs(){
 							info((" gend = %u\n", gend));
 							info((" i = %u\n", i));
 							info((" sr = %u\n\n", sr));
-							//info(("\n");
+
 			s = SA_[i];
 							info((" s <- SA[i] = %u\n", s));
 			p = PREV_[s];
@@ -487,9 +442,7 @@ void rearrange_prev_suffs(){
 		info(("Decrement group count of previous group suffixes, and move them to back\n\n"));
 		info(("i <- gend - 1 = %u\n\n", gend-1));
 
-		//OPTIMIZE: ///////////////////////////////////////////////////////////
 		decrement_group_count();
-		////////////////////////////////////////////////////////////////////////////
 
 		//set new GLINK for moved suffixes
 					info(("set new GLINK for moved suffixes\n\n"));
@@ -530,7 +483,7 @@ void decrement_group_count(){
 
     //LA_[p] += CONTEXTSIZE * (1+j)
 	  //LA_[p] += CONTEXTSIZE * (1+gsize_get(GSIZE_,i));
-    LA_[p] += CONTEXTSIZE * (1+n_group_reordered);
+    // LA_[p] += CONTEXTSIZE * (1+n_group_reordered);
 
 		#if Prints
 			print_decrement_group_count();
