@@ -119,7 +119,7 @@ int newLA(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned i
     count = 1;
   #endif
     info(("process groups from highest to lowest\n\n"));
-    gn=realloc_count=0;
+    //gn=realloc_count=0;
     new_PREV_size=0;
 		process_groups();
 
@@ -129,7 +129,7 @@ int newLA(const unsigned char *S, unsigned int *LA, unsigned int *SA, unsigned i
 
     info(("end of programme\n\n\n"));
     // printf("groups = %u\nreallocs = %u\n",gn,realloc_count);
-    printf("groups = %u\n",gn);
+    //printf("groups = %u\n",gn);
     return 0;
 }
 
@@ -183,35 +183,37 @@ void process_groups(){
     gendtmp = gend;
 
     isort2(gstart,gend);
-
-    old_PREV_size = new_PREV_size;
+    //
+    // old_PREV_size = new_PREV_size;
+    //
 
     new_PREV_size = gsize_get(GSIZE_,gstart);
+    
+    //
+    // if(new_PREV_size > old_PREV_size){
+    //   if(old_PREV_size == 0){
+    //     new_PREV = (unsigned int *)malloc(new_PREV_size * sizeof(unsigned int));
+    //     loc_PREV = (unsigned int *)malloc(new_PREV_size * sizeof(unsigned int));
+    //
+    //     for (size_t k = 0; k < new_PREV_size; k++) {
+    //       new_PREV[k] = loc_PREV[k] = 0;
+    //     }
+    //     // realloc_count += 2;
+    //   }else{
+    //
+    //     new_PREV = (unsigned int *)realloc(new_PREV, new_PREV_size * sizeof(unsigned int));
+    //     loc_PREV = (unsigned int *)realloc(loc_PREV, new_PREV_size * sizeof(unsigned int));
+    //
+    //     for (size_t k = old_PREV_size; k < new_PREV_size; k++) {
+    //       new_PREV[k] = loc_PREV[k] = 0;
+    //     }
+    //
+    //     // realloc_count += 2;
+    //   }
+    // }
 
-    if(new_PREV_size > old_PREV_size){
-      if(old_PREV_size == 0){
-        new_PREV = (unsigned int *)malloc(new_PREV_size * sizeof(unsigned int));
-        loc_PREV = (unsigned int *)malloc(new_PREV_size * sizeof(unsigned int));
-
-        for (size_t k = 0; k < new_PREV_size; k++) {
-          new_PREV[k] = loc_PREV[k] = 0;
-        }
-        // realloc_count += 2;
-      }else{
-
-        new_PREV = (unsigned int *)realloc(new_PREV, new_PREV_size * sizeof(unsigned int));
-        loc_PREV = (unsigned int *)realloc(loc_PREV, new_PREV_size * sizeof(unsigned int));
-
-        for (size_t k = old_PREV_size; k < new_PREV_size; k++) {
-          new_PREV[k] = loc_PREV[k] = 0;
-        }
-
-        // realloc_count += 2;
-      }
-    }
-
-    // new_PREV = (unsigned int *)calloc( new_PREV_size, sizeof(unsigned int));
-    // loc_PREV = (unsigned int *)calloc( new_PREV_size , sizeof(unsigned int));
+    new_PREV = (unsigned int *)calloc( new_PREV_size, sizeof(unsigned int));
+    loc_PREV = (unsigned int *)calloc( new_PREV_size , sizeof(unsigned int));
 
     info(("new_PREV of %u slots\n\n",new_PREV_size));
 
@@ -345,6 +347,11 @@ void process_groups(){
     #endif
 
     info(("\n"));
+
+    free(new_PREV);
+    new_PREV=0;
+    free(loc_PREV);
+    loc_PREV=0;
 
     pause;
 	}
@@ -771,34 +778,12 @@ void set_new_GLINK(){
     // sr = get_GLINK(ISA_[p]);
     sr = new_PREV[i-gstart+loc];
     info((" sr <- new_PREV[i-gstart+loc] = %u\n",new_PREV[i-gstart+loc]));
-    // sr = GLINK[p];
-		// info((" sr <- GLINK[p] = %u\n", GLINK[p]));
 		sr += gsize_get(GSIZE_, sr);
 		info((" sr += GSIZE[sr] = %u\n\n", sr));
     new_PREV[i-gstart+loc] = sr;
-    // gsize_inc(GSIZE_, sr);
-		// GLINK[p] = sr; //not needed
-    // new_PREV[i-gstart] = sr;
-		// info((" GLINK[p] <- sr = %u\n\n", sr));
     info((" new_PREV[i-gstart+loc] <- sr = %u\n\n",new_PREV[i-gstart+loc]));
 	}
 }
-
-// void setup_new_GSIZE(){
-// 	for (i = gstart; i < gend; ++i) {
-// 						info((" i = %u\n", i));
-// 		// p = SA_[i];
-// 						info((" p <- SA[i] = %u \n", SA_[i]));
-// 		sr = GLINK[p];
-//     // sr = get_GLINK(ISA_[p]);
-//     // sr = new_PREV[i-gstart];
-//     info((" sr <- new_PREV[i-gstart] = %u\n\n", new_PREV[i-gstart]));
-//     info((" sr <- GLINK[p] = %u\n", GLINK[p]));
-//             //
-// 		// gsize_inc(GSIZE_, sr);
-// 						printf(" GSIZE[sr] <- %u\n\n", gsize_get(GSIZE_, sr));
-// 	}
-// }
 
 void set_GSIZE2(){
   // loc_GLINK = get_GLINK(ISA_[p]); //GLINK of a previous pointer (p) from the process before
