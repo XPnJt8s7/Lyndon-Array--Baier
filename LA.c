@@ -105,7 +105,7 @@ int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, un
 
 		info(("n = %u\n", n_));
 
-    //Line 3 phase 1
+  //Line 3 phase 1
 	//process groups from highest to lowest
   #if Prits
     count = 1;
@@ -186,7 +186,7 @@ void process_groups(){
 
 		info(("GSIZE[%u] = %u\n\n", gstart, ((unsigned int *)GSIZE_)[gstart]));
 
-        //ALGO 4
+    //ALGO 4
 		//compute prev - pointers and mark suffixes of own group that
 		//have a prev-pointer of own group pointing to them
 
@@ -230,17 +230,11 @@ void process_groups(){
 
     info(("\n"));
 
-        //ALGO 6
+    //ALGO 6
 		//rearrange previous suffixes stored in other groups
     info(("--- rearrange previous suffixes stored in other groups\n\n\n"));
 
 		rearrange_prev_suffs();
-
-		/**
-  		decrement_group_count();
-  		set_new_GLINK();
-  		setup_new_GSIZE();
-		*/
 
 		//prepare current group for phase 2
 		SA_[gendtmp] = gstarttmp; //counter where to place next entry
