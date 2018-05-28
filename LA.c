@@ -109,15 +109,16 @@ int gsaca_phase_1(const unsigned char *S, unsigned int *LA, unsigned int *SA, un
 	//process groups from highest to lowest
   #if Prits
     count = 1;
+    //gn=0;
   #endif
+
     info(("process groups from highest to lowest\n\n"));
 
-    gn=0;
 
 		process_groups();
 
     info(("end of programme\n\n\n"));
-    printf("groups = %u\n",gn);
+    //printf("groups = %u\n",gn);
     return 0;
 }
 
